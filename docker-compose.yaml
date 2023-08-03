@@ -1,0 +1,48 @@
+version: '3.8'
+services:  
+  app:
+    restart: always
+    build:
+      context: ./node
+    container_name: app
+    networks:
+      - node-network
+    volumes:
+      - ./node:/usr/src/app
+      - /usr/src/app/node_modules
+    tty: true
+    depends_on:
+      - dbdesafio
+    links:
+      - dbdesafio
+    entrypoint: dockerize -wait tcp://dbapp:3306 -timeout 20s docker-entrypoint.sh
+    command: "node ./index.js"
+  
+  nginx:
+    restart: always
+    build:
+      context: ./nginx
+    networks:
+      - node-network
+    ports:
+      - "8080:80"
+    depends_on:
+      - app
+
+  dbdesafio:
+    image: mysql:5.7
+    container_name: dbdesafio
+    restart: always
+    tty: true
+    volumes:
+      - ./mysql:/var/lib/mysql
+      - ./setup.sql:/docker-entrypoint-initdb.d/setup.sql
+    networks:
+      - node-network
+    command: --innodb-use-native-aio=0
+    environment:
+      MYSQL_DATABASE: 'nodedb'
+      MYSQL_ROOT_PASSWORD: "root"
+networks:
+  node-network:
+    driver: bridge  
