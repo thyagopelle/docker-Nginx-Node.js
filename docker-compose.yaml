@@ -15,7 +15,7 @@ services:
       - dbdesafio
     links:
       - dbdesafio
-    entrypoint: dockerize -wait tcp://dbapp:3306 -timeout 20s docker-entrypoint.sh
+    entrypoint: dockerize -wait tcp://dbdesafio:3306 -timeout 20s docker-entrypoint.sh
     command: "node ./index.js"
   
   nginx:
